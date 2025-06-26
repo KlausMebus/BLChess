@@ -3,6 +3,15 @@ namespace BLChess.Domain
 open BLChess.Domain
 open System.Text
 
+/// Strongly-typed chessboard rank (0 = rank 1, 7 = rank 8)
+type Rank = private Rank of int
+
+module Rank =
+    let ofInt n =
+        if n < 0 || n > 7 then invalidArg "n" "Rank must be between 0 and 7"
+        Rank n
+    let toInt (Rank n) = n
+
 /// Represents the chessboard (8x8 positions)
 type Board = { Positions: Position array }
 
@@ -44,24 +53,29 @@ module Board =
         { Positions = positions }
 
     /// Get all positions for a given rank (0 = rank 1, 7 = rank 8)
-    let getRank (rank: int) (board: Board) : Position[] =
-        board.Positions |> Array.filter (fun pos -> Coordinate.rank pos.Coord = rank)
+    let getRank (rank: Rank) (board: Board) : Position[] =
+        let r = Rank.toInt rank
+        board.Positions.[r * 8 .. r * 8 + 7]
+
+    /// Helper to build FEN for a single rank recursively
+    let rec fenRank (positions: Position list) (empty: int) (acc: string) : string =
+        match positions with
+        | [] -> if empty > 0 then acc + string empty else acc
+        | pos :: rest ->
+            match pos.Piece with
+            | Some p ->
+                let acc' = if empty > 0 then acc + string empty + string (Piece.toChar p) else acc + string (Piece.toChar p)
+                fenRank rest 0 acc'
+            | None -> fenRank rest (empty + 1) acc
 
     let toFEN (board: Board) : string =
-        let sb = StringBuilder()
-        // FEN ranks are from 8 (top) to 1 (bottom)
-        for rank = 7 downto 0 do
-            let mutable empty = 0
-            for file = 0 to 7 do
-                let pos = board.Positions |> Array.find (fun p -> Coordinate.rank p.Coord = rank && Coordinate.file p.Coord = file)
-                match pos.Piece with
-                | Some p ->
-                    if empty > 0 then sb.Append(empty) |> ignore; empty <- 0
-                    sb.Append(Piece.toChar p) |> ignore
-                | None ->
-                    empty <- empty + 1
-            if empty > 0 then sb.Append(empty) |> ignore
-            if rank > 0 then sb.Append('/') |> ignore
-        // Standard FEN for default board: white to move, all castling rights, no en passant, 0 halfmove, 1 fullmove
-        sb.Append(" w KQkq - 0 1") |> ignore
-        sb.ToString()
+        let ranks = [ for r in 7 .. -1 .. 0 -> getRank (Rank.ofInt r) board |> Array.toList ]
+        let fenBody =
+            ranks
+            |> List.map (fun rankPositions -> fenRank rankPositions 0 "")
+            |> String.concat "/"
+        fenBody + " w KQkq - 0 1"
+
+
+
+

@@ -37,7 +37,7 @@ let ``Rank 2 is all white pawns in default setup`` () =
     // Arrange
     let board = Board.createDefault()
     // Act
-    let rank2 = Board.getRank 1 board
+    let rank2 = Board.getRank (Rank.ofInt 1) board
     // Assert
     Assert.All(rank2, fun pos -> Assert.True(isWhitePawn pos))
 
@@ -46,7 +46,7 @@ let ``Rank 7 is all black pawns in default setup`` () =
     // Arrange
     let board = Board.createDefault()
     // Act
-    let rank7 = Board.getRank 6 board
+    let rank7 = Board.getRank (Rank.ofInt 6) board
     // Assert
     Assert.All(rank7, fun pos -> Assert.True(isBlackPawn pos))
 
@@ -55,7 +55,7 @@ let ``Rank 1 contains correct white pieces in default setup`` () =
     // Arrange
     let board = Board.createDefault()
     // Act
-    let rank1 = Board.getRank 0 board
+    let rank1 = Board.getRank (Rank.ofInt 0) board
     // Assert
     let expected = [| Rook; Knight; Bishop; Queen; King; Bishop; Knight; Rook |]
     Assert.All(rank1, fun pos index -> Assert.True(isWhitePiece expected.[index] pos))
@@ -65,7 +65,7 @@ let ``Rank 8 contains correct black pieces in default setup`` () =
     // Arrange
     let board = Board.createDefault()
     // Act
-    let rank8 = Board.getRank 7 board
+    let rank8 = Board.getRank (Rank.ofInt 7) board
     // Assert
     let expected = [| Rook; Knight; Bishop; Queen; King; Bishop; Knight; Rook |]
     Assert.All(rank8, fun pos index -> Assert.True(isBlackPiece expected.[index] pos))
@@ -75,7 +75,7 @@ let ``getRank returns correct squares for rank 2`` () =
     // Arrange
     let board = Board.createDefault()
     // Act
-    let rank2 = Board.getRank 1 board
+    let rank2 = Board.getRank (Rank.ofInt 1) board
     // Assert
     Assert.Equal(8, rank2.Length)
     Assert.All(rank2, fun pos -> Assert.True(isWhitePawn pos))
