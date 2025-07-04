@@ -76,6 +76,21 @@ module Board =
             |> String.concat "/"
         fenBody + " w KQkq - 0 1"
 
+    /// Convert board to console string representation
+    let toConsoleString (board: Board) : string =
+        let rankToString (positions: Position[]) : string =
+            positions
+            |> Array.map (fun pos -> 
+                match pos.Piece with
+                | Some piece -> Piece.toChar piece
+                | None -> '.')
+            |> System.String
+        
+        let ranks = [ for r in 7 .. -1 .. 0 -> getRank (Rank.ofInt r) board ]
+        ranks
+        |> List.map rankToString
+        |> String.concat "\n"
+
 
 
 
