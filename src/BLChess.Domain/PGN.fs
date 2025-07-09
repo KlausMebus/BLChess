@@ -7,16 +7,28 @@ module PGN =
     type Move = string
     type Game = { Tags: Tag list; Moves: Move list; Result: string }
 
+    type GameResult =
+        | WhiteWin
+        | BlackWin
+        | Draw
+        | Unknown
+
+    let gameResultToString = function
+        | WhiteWin -> "1-0"
+        | BlackWin -> "0-1"
+        | Draw -> "1/2-1/2"
+        | Unknown -> "*"
+
     let parseTags (lines: string seq) =
         lines
         |> Seq.choose (fun line ->
-            if line.StartsWith("[") && line.EndsWith("]") then
+            if line.StartsWith "[" && line.EndsWith "]" then
                 let content = line.Substring(1, line.Length - 2)
-                match content.IndexOf(' ') with
+                match content.IndexOf ' ' with
                 | -1 -> None
                 | idx ->
                     let name = content.Substring(0, idx)
-                    let value = content.Substring(idx + 1).Trim().Trim('"')
+                    let value = content.Substring(idx + 1).Trim().Trim '"'
                     Some { Name = name; Value = value }
             else None)
         |> Seq.toList
@@ -34,7 +46,7 @@ module PGN =
 
     let parseMoves (lines: string seq) =
         lines
-        |> Seq.filter (fun line -> not (line.StartsWith("[")))
+        |> Seq.filter (fun line -> not (line.StartsWith "["))
         |> String.concat " "
         |> removeComments
         |> fun s ->
@@ -42,15 +54,15 @@ module PGN =
             |> Array.toList
             |> List.filter (fun m ->
                 // Remove move numbers and results
-                not (System.Char.IsDigit m.[0] && m.Contains(".")) &&
-                m <> "1-0" && m <> "0-1" && m <> "1/2-1/2" && m <> "*")
+                not (System.Char.IsDigit m.[0] && m.Contains ".") &&
+                m <> gameResultToString WhiteWin && m <> gameResultToString BlackWin && m <> gameResultToString Draw && m <> gameResultToString Unknown)
 
     let parseResult (lines: string seq) =
         lines
         |> Seq.tryFind (fun line ->
             let trimmed = line.Trim()
-            trimmed = "1-0" || trimmed = "0-1" || trimmed = "1/2-1/2" || trimmed = "*")
-        |> Option.defaultValue "*"
+            trimmed = gameResultToString WhiteWin || trimmed = gameResultToString BlackWin || trimmed = gameResultToString Draw || trimmed = gameResultToString Unknown)
+        |> Option.defaultValue (gameResultToString Unknown)
 
     let parseGame (pgnText: string) : Game =
         let lines = pgnText.Split([| '\n'; '\r' |], System.StringSplitOptions.RemoveEmptyEntries) |> Seq.ofArray
@@ -63,5 +75,5 @@ module PGN =
         { Tags = tags; Moves = moves; Result = result }
 
     let loadGameFromFile (filePath: string) : Game =
-        let text = File.ReadAllText(filePath)
+        let text = File.ReadAllText filePath
         parseGame text

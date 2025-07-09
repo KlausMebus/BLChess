@@ -1,7 +1,6 @@
 namespace BLChess.Domain
 
 open BLChess.Domain
-open System.Text
 
 /// Strongly-typed chessboard rank (0 = rank 1, 7 = rank 8)
 type Rank = private Rank of int
@@ -53,9 +52,8 @@ module Board =
         { Positions = positions }
 
     /// Get all positions for a given rank (0 = rank 1, 7 = rank 8)
-    let getRank (rank: Rank) (board: Board) : Position[] =
-        let r = Rank.toInt rank
-        board.Positions.[r * 8 .. r * 8 + 7]
+    let getRank (board: Board) rank : Position[] =
+        board.Positions.[rank * 8 .. rank * 8 + 7]
 
     /// Helper to build FEN for a single rank recursively
     let rec fenRank (positions: Position list) (empty: int) (acc: string) : string =
@@ -69,13 +67,9 @@ module Board =
             | None -> fenRank rest (empty + 1) acc
 
     let toFEN (board: Board) : string =
-        let ranks = [ for r in 7 .. -1 .. 0 -> getRank (Rank.ofInt r) board |> Array.toList ]
+        let ranks = [ for r in 7 .. -1 .. 0 -> getRank board r |> Array.toList ]
         let fenBody =
             ranks
             |> List.map (fun rankPositions -> fenRank rankPositions 0 "")
             |> String.concat "/"
         fenBody + " w KQkq - 0 1"
-
-
-
-

@@ -44,13 +44,13 @@ module Piece =
         | _ -> None
 
 /// Represents a position on the board (e.g., e4, d5)
-type Position = { Coord: Coordinate; Piece: Piece option }
+type Position = { Coord: PackedCoordinate; Piece: Piece option }
 
 /// Represents a move in a chess game
 type Move = {
     Piece: Piece
-    From: Coordinate
-    To: Coordinate
+    From: PackedCoordinate
+    To: PackedCoordinate
     Annotation: string option // e.g., check, checkmate, etc.
 }
 
