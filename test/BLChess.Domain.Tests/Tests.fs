@@ -105,3 +105,38 @@ let ``toFEN returns correct FEN for default board`` () =
     let fen = Board.toFEN board
     // Assert
     Assert.Equal("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", fen)
+
+[<Fact>]
+let ``toConsoleString returns correct console representation for default board`` () =
+    // Arrange
+    let board = Board.createDefault()
+    // Act
+    let consoleString = Board.toConsoleString board
+    // Assert
+    let expected = "rnbqkbnr\npppppppp\n........\n........\n........\n........\nPPPPPPPP\nRNBQKBNR"
+    Assert.Equal(expected, consoleString)
+
+[<Fact>]
+let ``toConsoleString shows empty board correctly`` () =
+    // Arrange
+    let emptyBoard = { Positions = Array.create 64 { Coord = 0uy; Piece = None } }
+    // Act
+    let consoleString = Board.toConsoleString emptyBoard
+    // Assert
+    let expected = "........\n........\n........\n........\n........\n........\n........\n........"
+    Assert.Equal(expected, consoleString)
+
+[<Fact>]
+let ``toConsoleString shows partial board correctly`` () =
+    // Arrange - create a board with just a few pieces
+    let positions = Array.create 64 { Coord = 0uy; Piece = None }
+    // Add white king on e1 (file 4, rank 0 -> index 4)
+    positions.[4] <- { Coord = 4uy; Piece = Some { Color = White; PieceType = King } }
+    // Add black king on e8 (file 4, rank 7 -> index 60)
+    positions.[60] <- { Coord = 60uy; Piece = Some { Color = Black; PieceType = King } }
+    let partialBoard = { Positions = positions }
+    // Act
+    let consoleString = Board.toConsoleString partialBoard
+    // Assert
+    let expected = "....k...\n........\n........\n........\n........\n........\n........\n....K..."
+    Assert.Equal(expected, consoleString)
